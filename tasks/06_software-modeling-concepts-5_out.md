@@ -1,0 +1,123 @@
+# The Virtual Plugin: A Blueprint for Agent-Driven Development (v5)
+
+This document provides the definitive technical architecture for the Orchestrator and Agent interaction, clarifying how agent actions are logged and how a single set of playbooks can be reliably tested in a virtual environment.
+
+## 1. Core Architecture: The Orchestrator as a Tool Proxy
+
+The system is composed of two distinct components:
+
+1.  **The Orchestrator:** A deterministic Python application (`packages/framework`) that manages the entire process. It is the only component with the ability to access the filesystem or execute shell commands. It is "dumb" in that it only follows a script.
+2.  **The Agent:** An external Large Language Model (e.g., Gemini CLI) that makes decisions and reasons about how to achieve a goal. It is "smart" but has no direct power.
+
+The interaction between them is a **Tool-Proxy Model**. The Agent can only achieve its goals by requesting that the Orchestrator use a tool on its behalf. This interception is the key to our entire logging and verification system.
+
+### The Execution Loop in Detail
+
+1.  **Initiation:** The Orchestrator is started (e.g., `make run-playbook ...`). It reads the specified playbook to get the high-level goal.
+2.  **Prompt Construction:** The Orchestrator constructs the initial prompt. This prompt contains:
+    *   The high-level goal from the playbook.
+    *   Crucial context about the environment (`virtual` or `real`).
+    *   A list of available tools (`run_shell_command`, `write_file`, etc.).
+3.  **Agent Invocation:** The Orchestrator calls the Agent's API with the constructed prompt.
+4.  **Agent Response (Tool Call):** The Agent processes the prompt and decides on an action. It returns a structured request to the Orchestrator to use a specific tool (e.g., `{"tool_call": {"name": "read_file", "args": {"path": "src/main.py"}}}`).
+5.  **Orchestrator Interception & Logging:** The Orchestrator receives this request.
+    a.  **Log the Intent:** It writes the agent's requested action to `execution_trace.jsonl`.
+    b.  **Execute the Action:** It performs the actual file read using its own Python functions.
+    c.  **Log the Result:** It writes the outcome of the action (e.g., the file's content) to the trace.
+6.  **Response to Agent:** The Orchestrator makes a *new* API call to the Agent, providing the result of the previous tool call as the new context.
+7.  The loop continues from step 4 until the Agent determines the high-level goal is complete.
+
+This model ensures that every action the agent takes is explicitly requested, executed by the framework, and logged for later verification.
+
+## 2. The Unified Playbook with Context Injection
+
+We maintain a **single, canonical set of playbooks**. We gain confidence in them by testing them in a simple virtual environment, which is made possible by the Orchestrator providing explicit environmental context to the Agent.
+
+**Playbook Goal (`playbook_fix_bug.md`):**
+> "A user reports that processing a zero-byte file incorrectly returns an 'InvalidFile' error. Your task is to write a failing test that reproduces this bug, then implement the necessary code changes to make the test pass."
+
+### Orchestrator's Contextual Prompt (Virtual Env)
+
+```
+You are operating in a **Virtual Environment**. Your working directory is `/plugins_virtual/image-processor`.
+
+**Goal:** Fix the bug related to zero-byte files.
+
+**IMPORTANT CONTEXT:** To modify the behavior of a Virtual Plugin, you must edit the `plugin-profile.yaml` file to change the defined success and failure scenarios. The Python code in `src/` is a generic interpreter and should not be modified.
+```
+
+### Orchestrator's Contextual Prompt (Real Env)
+
+```
+You are operating in a **Real Environment**. Your working directory is `/plugins_real/image-processor`.
+
+**Goal:** Fix the bug related to zero-byte files.
+
+**IMPORTANT CONTEXT:** To fix this bug, you must modify the Python source code in the `src/` directory to correctly handle this edge case.
+```
+
+This approach removes ambiguity and brittle "deduction." The Agent is given clear, actionable instructions tailored to its environment, allowing us to test the exact same high-level reasoning process in both contexts.
+
+## 3. Finalized Project Structure
+
+This structure promotes isolation, security, and Python best practices.
+
+```
+/poc-plugin-manager/
+├── Makefile                # Easy access to common commands
+├── packages/
+│   └── framework/
+│       ├── __init__.py
+│       ├── __main__.py         # Main CLI entrypoint for the orchestrator
+│       ├── orchestrator.py     # Core execution loop logic
+│       ├── schema.py           # Pydantic schemas
+│       └── tests/              # Unit tests for the framework itself
+│
+├── playbooks/
+│   ├── playbook_tdd.md
+│   └── playbook_fix_bug.md
+│
+├── plugin_profiles/
+│   └── image_processor.yaml    # Master copy of a plugin's profile
+│
+├── plugins_virtual/
+│   └── image-processor/        # Generated by the factory for testing
+│       ├── .history/
+│       │   └── execution_trace.jsonl
+│       ├── plugin-profile.yaml # Copied from master and modified by agent
+│       ├── src/main.py
+│       └── tests/
+│
+└── plugins_real/
+    └── # Populated by agents running playbooks on real code
+```
+
+-   **Agent Working Directory:** When a playbook is run, the agent's working directory is always set to the specific plugin's folder (e.g., `plugins_virtual/image-processor`), preventing it from accessing anything outside its scope.
+-   **Plugin Factory:** The factory (`make generate-virtual-plugin`) will now copy the master profile from `plugin_profiles/` into the new virtual plugin's directory.
+
+## 4. `Makefile` for Simplified Workflow
+
+A `Makefile` will serve as the primary entrypoint for developers.
+
+```makefile
+.PHONY: help setup test-framework generate-virtual-plugin run-playbook
+
+help:
+	@echo "Available commands:"
+	@echo "  setup                  - Install dependencies"
+	@echo "  test-framework         - Run unit tests for the orchestrator framework"
+	@echo "  generate-virtual-plugin - Generate a virtual plugin for testing (e.g., make generate-virtual-plugin PROFILE=image_processor)"
+	@echo "  run-playbook           - Run a playbook on a plugin (e.g., make run-playbook PLAYBOOK=fix_bug PLUGIN=image-processor ENV=virtual)"
+
+setup:
+	pip install -r requirements.txt
+
+test-framework:
+	pytest packages/framework/tests/
+
+generate-virtual-plugin:
+	python -m framework --action generate --profile-name $(PROFILE)
+
+run-playbook:
+	python -m framework --action run --playbook-name $(PLAYBOOK) --plugin-name $(PLUGIN) --env $(ENV)
+```
