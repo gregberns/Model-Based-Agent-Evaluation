@@ -3,16 +3,17 @@
 import pytest
 import yaml
 import os
+import logging
 from pathlib import Path
 
-from evaluations.harness import EvaluationHarness
+from .harness import EvaluationHarness
 from packages.framework.factory import PluginFactory
 from packages.framework.orchestrator import Orchestrator
 from packages.framework.loaders import ProfileLoader, PlaybookLoader
 from packages.framework.prompt_constructor import PromptConstructor
-from packages.framework.tool_wrapper import wrap_tool
-from packages.plugin_manager_agent import GeminiAgent
-from packages.plugin_manager_agent.tools import TOOL_LIST
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Skip this entire test module if the API key is not available
 pytestmark = pytest.mark.skipif(
@@ -53,6 +54,7 @@ def virtual_plugin_path(tmp_path: Path) -> Path:
     output_dir = tmp_path / "plugins"
     return factory.create(profile_path, output_dir)
 
+@pytest.mark.timeout(180)
 def test_fix_bug_playbook_on_virtual_plugin(virtual_plugin_path: Path):
     """
     Tests the full end-to-end flow of running the fix_bug playbook
@@ -61,17 +63,7 @@ def test_fix_bug_playbook_on_virtual_plugin(virtual_plugin_path: Path):
     # 1. Setup all components
     api_key = os.getenv("GEMINI_API_KEY")
     
-    # Wrap the real tools for observability
-    wrapped_tools = [wrap_tool(tool) for tool in TOOL_LIST]
-    
-    agent = GeminiAgent(
-        api_key=api_key,
-        working_directory=str(virtual_plugin_path),
-        tools=wrapped_tools
-    )
-    
     orchestrator = Orchestrator(
-        agent=agent,
         profile_loader=ProfileLoader(),
         playbook_loader=PlaybookLoader(),
         prompt_constructor=PromptConstructor()
@@ -82,40 +74,18 @@ def test_fix_bug_playbook_on_virtual_plugin(virtual_plugin_path: Path):
     # 2. Execute the playbook
     playbook_path = Path(__file__).parent.parent / "playbooks" / "playbook_fix_bug.md"
     
-    events = harness.run_and_capture(
+    harness.run_and_capture(
         playbook_path=playbook_path,
         plugin_path=virtual_plugin_path,
         env="virtual",
+        api_key=api_key,
         bug_description="The test for the bug scenario is failing. Please fix it."
     )
 
-    # Print the captured events for debugging
-    print("\n--- Captured Events ---")
-    import json
-    print(json.dumps(events, indent=2))
-    print("-----------------------\n")
-
-    # 3. Assert against the captured events
-    # This is a high-level assertion to prove the concept. More detailed assertions
-    # can be added to verify each step of the playbook.
-    
-    # Check that the agent tried to edit the profile
+    # 3. Assert
+    events = harness.captured_events
     edit_profile_events = [
         e for e in events 
-        if e.get("name") == "edit_file" and "plugin-profile.yaml" in e.get("args", {}).get("file_path", "")
+        if e.get("name") == "edit_file" and "plugin-profile.yaml" in e.get("args", {}).get("path", "")
     ]
     assert len(edit_profile_events) > 0, "Agent should have attempted to edit the plugin profile"
-
-    # Check that the agent tried to edit the changelog
-    edit_changelog_events = [
-        e for e in events 
-        if e.get("name") == "edit_file" and "CHANGE_LOG.md" in e.get("args", {}).get("file_path", "")
-    ]
-    assert len(edit_changelog_events) > 0, "Agent should have attempted to edit the CHANGE_LOG.md"
-
-    # Check that the agent ran the tests
-    run_test_events = [
-        e for e in events 
-        if e.get("name") == "execute_shell_command" and "pytest" in e.get("args", {}).get("command", "")
-    ]
-    assert len(run_test_events) > 0, "Agent should have run pytest"

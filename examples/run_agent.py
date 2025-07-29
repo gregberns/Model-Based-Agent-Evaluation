@@ -21,7 +21,7 @@ def main():
     agent = GeminiAgent(
         api_key=api_key,
         working_directory=str(workspace_path),
-        model_name="gemini-pro",
+        model_name="gemini-2.5-pro",
         tools=TOOL_LIST,
     )
 

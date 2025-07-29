@@ -19,6 +19,13 @@ class EventEmitter:
             for listener in self._listeners[event_name]:
                 listener(data)
 
+    def remove_listener(self, event_name: str, listener_to_remove: Callable):
+        """Remove a specific listener for a given event."""
+        if event_name in self._listeners:
+            self._listeners[event_name] = [
+                listener for listener in self._listeners[event_name]
+                if listener != listener_to_remove
+            ]
+
 # A global singleton instance for the application to use.
-# This simplifies event handling by providing a single, accessible emitter.
 event_emitter = EventEmitter()

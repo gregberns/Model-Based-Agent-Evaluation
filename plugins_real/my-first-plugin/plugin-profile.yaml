@@ -1,0 +1,15 @@
+name: "My-First-Plugin"
+version: "0.1.0"
+description: "A real plugin for demonstrating the framework's capabilities."
+mcp_profile:
+  - name: "greet"
+    description: "Generates a greeting message."
+    parameters:
+      name:
+        type: "string"
+        description: "The name of the person to greet."
+    output:
+      type: "string"
+      description: "The greeting message."
+dependencies:
+  - "python:3.9"

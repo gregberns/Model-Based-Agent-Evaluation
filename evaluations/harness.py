@@ -32,6 +32,13 @@ class EvaluationHarness:
         event_emitter.on("tool_completed", generic_listener)
         event_emitter.on("tool_failed", generic_listener)
 
-        self.orchestrator.run(*args, **kwargs)
+        # The orchestrator now runs to completion in a single call.
+        # Events are captured by the listener registered to the global emitter.
+        final_response = self.orchestrator.run(*args, **kwargs)
 
-        return self.captured_events
+        # Unregister the listener to avoid side effects in other tests
+        event_emitter.remove_listener("tool_requested", generic_listener)
+        event_emitter.remove_listener("tool_completed", generic_listener)
+        event_emitter.remove_listener("tool_failed", generic_listener)
+
+        return final_response

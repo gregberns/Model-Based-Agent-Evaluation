@@ -1,79 +1,49 @@
-from google.generativeai.client import Client
-import google.generativeai as genai
-from google.generativeai import protos
-from google.generativeai import types
-
+import os
+import logging
+from google import genai
+from google.genai import types
 from .tools import TOOL_LIST as DEFAULT_TOOL_LIST
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 class GeminiAgent:
-    def __init__(self, api_key: str, working_directory: str, model_name: str = "gemini-pro", tools: list = None):
+    def __init__(self, api_key: str, working_directory: str, model_name: str = "gemini-2.5-pro", tools: list = None):
         self.working_directory = working_directory
         if not os.path.exists(self.working_directory):
             os.makedirs(self.working_directory)
         os.chdir(self.working_directory)
         
-        # Use a client to specify the stable 'v1' API version
-        client = Client(
-            api_key=api_key,
-            http_options=types.HttpOptions(api_version='v1')
-        )
+        self.client = genai.Client(api_key=api_key)
+        self.model_name = model_name
         
         if tools is None:
             tools = DEFAULT_TOOL_LIST
         
-        self.tool_functions = {func.__name__: func for func in tools}
-        self.model = genai.GenerativeModel(
-            model_name=model_name,
-            tools=tools,
-            client=client
-        )
-        
+        self.tools = tools
         self.history = []
 
-    def execute(self, prompt: str):
+    def execute(self, prompt: str) -> str:
         """
-        Executes a prompt, yielding tool calls and returning the final text response.
+        Executes a prompt using the SDK's automatic function calling.
+        Tool calls are not yielded but are captured by the event wrappers.
+        Returns the final text response from the model.
         """
-        self.history.append(protos.Content(parts=[protos.Part(text=prompt)], role="user"))
+        logging.info(f"Agent starting execution with prompt: {prompt[:200]}...")
+        
+        # Add the new user prompt to the history
+        self.history.append(types.Content(role='user', parts=[types.Part.from_text(text=prompt)]))
+        
+        # With AFC enabled, the SDK handles the entire conversation loop.
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=self.history,
+            config=types.GenerateContentConfig(tools=self.tools)
+        )
+        
+        # Update the history with the model's response
+        self.history.append(response.candidates[0].content)
 
-        while True:
-            response = self.model.generate_content(self.history)
-            candidate = response.candidates[0]
-
-            if not candidate.content.parts or not candidate.content.parts[0].function_call:
-                if not candidate.content.parts:
-                    final_text = ""
-                else:
-                    final_text = candidate.content.parts[0].text
-                
-                self.history.append(protos.Content(parts=[protos.Part(text=final_text)], role="model"))
-                return final_text
-
-            function_call = candidate.content.parts[0].function_call
-            
-            self.history.append(protos.Content(parts=[protos.Part(function_call=function_call)], role="model"))
-
-            yield {
-                "name": function_call.name,
-                "args": dict(function_call.args),
-            }
-
-            tool_function = self.tool_functions.get(function_call.name)
-            if not tool_function:
-                raise ValueError(f"Tool '{function_call.name}' not found.")
-            
-            tool_response = tool_function(**dict(function_call.args))
-            
-            self.history.append(
-                protos.Content(
-                    parts=[
-                        protos.Part(
-                            function_response=protos.FunctionResponse(
-                                name=function_call.name,
-                                response={"result": tool_response},
-                            )
-                        )
-                    ],
-                    role="user"
-                )
-            )
+        final_text = response.text
+        logging.info(f"Agent finished with final response: {final_text[:200]}...")
+        return final_text
