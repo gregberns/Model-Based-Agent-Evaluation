@@ -1,0 +1,46 @@
+# templates/virtual_main.py.j2
+import json
+import sys
+import yaml
+from pathlib import Path
+
+def main():
+    """
+    This is a generic, simulated main entrypoint for a virtual plugin.
+    It reads its behavior from the plugin-profile.yaml.
+    """
+    if len(sys.argv) != 3:
+        print("Usage: python main.py <tool_name> <json_args>")
+        sys.exit(1)
+
+    tool_name = sys.argv[1]
+    try:
+        args = json.loads(sys.argv[2])
+    except json.JSONDecodeError:
+        print("Error: Invalid JSON arguments.")
+        sys.exit(1)
+
+    # Load the profile to determine behavior
+    profile_path = Path(__file__).parent.parent / "plugin-profile.yaml"
+    with open(profile_path, 'r') as f:
+        profile = yaml.safe_load(f)
+
+    behavioral_profile = profile.get("behavioral_profile", {})
+    
+    # Check success scenarios
+    for scenario in behavioral_profile.get("success_scenarios", []):
+        if scenario["tool_call"] == tool_name and scenario["inputs"] == args:
+            print(scenario["expected_log"])
+            sys.exit(0)
+
+    # Check failure scenarios
+    for scenario in behavioral_profile.get("failure_scenarios", []):
+        if scenario["tool_call"] == tool_name and scenario["inputs"] == args:
+            print(scenario["expected_log"], file=sys.stderr)
+            sys.exit(1)
+
+    print(f"Error: No matching behavior found for tool '{tool_name}' with args {args}", file=sys.stderr)
+    sys.exit(1)
+
+if __name__ == "__main__":
+    main()

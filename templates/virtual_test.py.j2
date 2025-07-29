@@ -1,0 +1,39 @@
+# templates/virtual_test.py.j2
+import subprocess
+import json
+import pytest
+
+# This is a generated test file. It uses the behavioral_profile from the
+# plugin-profile.yaml to create test cases.
+
+{% for scenario in profile.behavioral_profile.success_scenarios %}
+def test_success_{{ loop.index }}():
+    """Tests the success scenario: {{ scenario.description }}"""
+    tool_name = "{{ scenario.tool_call }}"
+    args = {{ scenario.inputs | tojson }}
+    
+    result = subprocess.run(
+        ["python", "src/main.py", tool_name, json.dumps(args)],
+        capture_output=True,
+        text=True
+    )
+    
+    assert result.returncode == 0
+    assert "{{ scenario.expected_log }}" in result.stdout
+{% endfor %}
+
+{% for scenario in profile.behavioral_profile.failure_scenarios %}
+def test_failure_{{ loop.index }}():
+    """Tests the failure scenario: {{ scenario.description }}"""
+    tool_name = "{{ scenario.tool_call }}"
+    args = {{ scenario.inputs | tojson }}
+    
+    result = subprocess.run(
+        ["python", "src/main.py", tool_name, json.dumps(args)],
+        capture_output=True,
+        text=True
+    )
+    
+    assert result.returncode != 0
+    assert "{{ scenario.expected_log }}" in result.stderr
+{% endfor %}

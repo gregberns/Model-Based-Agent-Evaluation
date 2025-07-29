@@ -1,19 +1,4 @@
-[project]
-name = "plugin-manager-agent"
-version = "0.1.0"
-description = "A coding agent for managing a set of plugins."
-readme = "README.md"
-requires-python = ">=3.9"
-license = {file = "LICENSE.txt"}
-authors = [
-  {name = "Your Name", email = "you@example.com"},
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
 ]
-
-dependencies = [
-    "google-genai",
-    "python-dotenv",
-]
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"

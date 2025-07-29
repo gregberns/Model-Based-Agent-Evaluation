@@ -20,32 +20,32 @@ This document outlines the concrete tasks required to build the Plugin Manager f
 ### 1.2. Plugin Model Schema
 **Plan:** [`docs/project-plan/01_plugin_model_and_structure_plan.md`](./docs/project-plan/01_plugin_model_and_structure_plan.md)
 **Tech Spec:** [`docs/project-plan/01_plugin_model_and_structure_plan__tech.md`](./docs/project-plan/01_plugin_model_and_structure_plan__tech.md)
-- [ ] **Code:** Implement all Pydantic models (`PluginProfile`, `MCPTool`, etc.) in `packages/framework/schema.py`.
-- [ ] **Test:** Write unit tests in `packages/framework/tests/test_schema.py` to validate the Pydantic models.
+- [x] **Code:** Implement all Pydantic models (`PluginProfile`, `MCPTool`, etc.) in `packages/framework/schema.py`.
+- [x] **Test:** Write unit tests in `packages/framework/tests/test_schema.py` to validate the Pydantic models.
 
 ### 1.3. Core Loaders
 **Tech Spec:** [`docs/project-plan/03_agent_playbooks_plan__tech.md`](./docs/project-plan/03_agent_playbooks_plan__tech.md)
-- [ ] **Code:** Implement the `ProfileLoader` class in `packages/framework/loaders.py`.
-- [ ] **Test:** Write unit tests in `packages/framework/tests/test_loaders.py` for the `ProfileLoader`.
-- [ ] **Code:** Implement the `Playbook` data class and the `PlaybookLoader` class in `packages/framework/loaders.py`.
-- [ ] **Test:** Write unit tests in `packages/framework/tests/test_loaders.py` for the `PlaybookLoader`.
+- [x] **Code:** Implement the `ProfileLoader` class in `packages/framework/loaders.py`.
+- [x] **Test:** Write unit tests in `packages/framework/tests/test_loaders.py` for the `ProfileLoader`.
+- [x] **Code:** Implement the `Playbook` data class and the `PlaybookLoader` class in `packages/framework/loaders.py`.
+- [x] **Test:** Write unit tests in `packages/framework/tests/test_loaders.py` for the `PlaybookLoader`.
 
 ### 1.4. Virtual Plugin Factory
 **Plan:** [`docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan.md`](./docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan.md)
 **Tech Spec:** [`docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan__tech.md`](./docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan__tech.md)
-- [ ] **Code:** Create the `virtual_main.py.j2` and `virtual_test.py.j2` Jinja2 templates in the `/templates` directory.
-- [ ] **Code:** Implement the `PluginFactory` class in `packages/framework/factory.py`.
-- [ ] **Test:** Write unit tests in `packages/framework/tests/test_factory.py` to ensure the factory correctly generates a virtual plugin.
+- [x] **Code:** Create the `virtual_main.py.j2` and `virtual_test.py.j2` Jinja2 templates in the `/templates` directory.
+- [x] **Code:** Implement the `PluginFactory` class in `packages/framework/factory.py`.
+- [x] **Test:** Write unit tests in `packages/framework/tests/test_factory.py` to ensure the factory correctly generates a virtual plugin.
 
 ### 1.5. Initial Playbook Asset
 **Plan:** [`docs/project-plan/03_agent_playbooks_plan.md`](./docs/project-plan/03_agent_playbooks_plan.md)
-- [ ] **Asset:** Create the initial `playbook_fix_bug.md` file in the `/playbooks` directory.
+- [x] **Asset:** Create the initial `playbook_fix_bug.md` file in the `/playbooks` directory.
 
 ### 1.6. Evaluation Harness
 **Plan:** [`docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan.md`](./docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan.md)
 **Tech Spec:** [`docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan__tech.md`](./docs/project-plan/04_virtual_plugin_factory_and_evaluation_plan__tech.md)
-- [ ] **Code:** Implement the `EvaluationHarness` class in `evaluations/harness.py`.
-- [ ] **Test:** Create the structure for the first evaluation test in `evaluations/test_playbook_fix_bug.py`. Mark to be skipped (`@pytest.mark.skip`) until Phase 2.
+- [x] **Code:** Implement the `EvaluationHarness` class in `evaluations/harness.py`.
+- [x] **Test:** Create the structure for the first evaluation test in `evaluations/test_playbook_fix_bug.py`. Mark to be skipped (`@pytest.mark.skip`) until Phase 2.
 
 ---
 
@@ -56,21 +56,21 @@ This document outlines the concrete tasks required to build the Plugin Manager f
 ### 2.1. Event System & Tooling
 **Plan:** [`docs/project-plan/02_orchestrator_framework_plan.md`](./docs/project-plan/02_orchestrator_framework_plan.md)
 **Tech Spec:** [`docs/project-plan/02_orchestrator_framework_plan__tech.md`](./docs/project-plan/02_orchestrator_framework_plan__tech.md)
-- [ ] **Code:** Implement the `EventEmitter` class in `packages/framework/events.py`.
-- [ ] **Test:** Write unit tests for the `EventEmitter`.
-- [ ] **Code:** Implement the `wrap_tool` decorator in `packages/framework/tool_wrapper.py`.
-- [ ] **Test:** Write unit tests for `wrap_tool` to ensure it emits events correctly.
+- [x] **Code:** Implement the `EventEmitter` class in `packages/framework/events.py`.
+- [x] **Test:** Write unit tests for the `EventEmitter`.
+- [x] **Code:** Implement the `wrap_tool` decorator in `packages/framework/tool_wrapper.py`.
+- [x] **Test:** Write unit tests for `wrap_tool` to ensure it emits events correctly.
 
 ### 2.2. Prompt Construction
 **Tech Spec:** [`docs/project-plan/03_agent_playbooks_plan__tech.md`](./docs/project-plan/03_agent_playbooks_plan__tech.md)
-- [ ] **Code:** Implement the `PromptConstructor` class in `packages/framework/prompt_constructor.py`.
-- [ ] **Test:** Write unit tests for the `PromptConstructor`.
+- [x] **Code:** Implement the `PromptConstructor` class in `packages/framework/prompt_constructor.py`.
+- [x] **Test:** Write unit tests for the `PromptConstructor`.
 
 ### 2.3. Orchestrator Engine
 **Plan:** [`docs/project-plan/02_orchestrator_framework_plan.md`](./docs/project-plan/02_orchestrator_framework_plan.md)
 **Tech Spec:** [`docs/project-plan/02_orchestrator_framework_plan__tech.md`](./docs/project-plan/02_orchestrator_framework_plan__tech.md)
-- [ ] **Code:** Implement the `Orchestrator` class in `packages/framework/orchestrator.py`.
-- [ ] **Test:** Write unit tests for the `Orchestrator`, mocking the `GeminiAgent`.
+- [x] **Code:** Implement the `Orchestrator` class in `packages/framework/orchestrator.py`.
+- [x] **Test:** Write unit tests for the `Orchestrator`, mocking the `GeminiAgent`.
 
 ### 2.4. Final Integration and End-to-End Evaluation
 - [ ] **Integration:** Update the `GeminiAgent` to accept the wrapped toolset from the Orchestrator.
