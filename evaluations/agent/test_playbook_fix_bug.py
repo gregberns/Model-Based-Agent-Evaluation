@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 
-from .harness import EvaluationHarness
+from ..harness import EvaluationHarness
 from packages.framework.factory import PluginFactory
 from packages.framework.orchestrator import Orchestrator
 from packages.framework.loaders import ProfileLoader, PlaybookLoader
@@ -27,7 +27,7 @@ def virtual_plugin_path(tmp_path: Path) -> Path:
     profile_dir = tmp_path / "profile"
     profile_dir.mkdir()
     profile_path = profile_dir / "plugin-profile.yaml"
-    
+
     profile_data = {
         "name": "Virtual-Test-Plugin",
         "version": "1.0.0",
@@ -50,7 +50,7 @@ def virtual_plugin_path(tmp_path: Path) -> Path:
 
     template_dir = Path(__file__).parent.parent / "templates"
     factory = PluginFactory(template_dir=template_dir)
-    
+
     output_dir = tmp_path / "plugins"
     return factory.create(profile_path, output_dir)
 
@@ -62,18 +62,18 @@ def test_fix_bug_playbook_on_virtual_plugin(virtual_plugin_path: Path):
     """
     # 1. Setup all components
     api_key = os.getenv("GEMINI_API_KEY")
-    
+
     orchestrator = Orchestrator(
         profile_loader=ProfileLoader(),
         playbook_loader=PlaybookLoader(),
         prompt_constructor=PromptConstructor()
     )
-    
+
     harness = EvaluationHarness(orchestrator)
 
     # 2. Execute the playbook
     playbook_path = Path(__file__).parent.parent / "playbooks" / "playbook_fix_bug.md"
-    
+
     harness.run_and_capture(
         playbook_path=playbook_path,
         plugin_path=virtual_plugin_path,
@@ -85,7 +85,7 @@ def test_fix_bug_playbook_on_virtual_plugin(virtual_plugin_path: Path):
     # 3. Assert
     events = harness.captured_events
     edit_profile_events = [
-        e for e in events 
+        e for e in events
         if e.get("name") == "edit_file" and "plugin-profile.yaml" in e.get("args", {}).get("path", "")
     ]
     assert len(edit_profile_events) > 0, "Agent should have attempted to edit the plugin profile"

@@ -2,7 +2,7 @@
 
 import pytest
 from packages.framework.events import EventEmitter
-from packages.framework.tool_wrapper import wrap_tool
+from packages.framework.tool_wrapper import tool_wrapper_factory
 
 @pytest.fixture
 def emitter():
@@ -11,8 +11,10 @@ def emitter():
 
 def test_wrap_tool_emits_requested_and_completed_events(emitter):
     """Tests that the wrapper emits success events correctly."""
-    
-    @wrap_tool
+
+    tool_wrapper = tool_wrapper_factory(hitl=False)
+
+    @tool_wrapper
     def sample_tool(param1: str, param2: int = 10):
         return f"Success with {param1} and {param2}"
 
@@ -27,7 +29,7 @@ def test_wrap_tool_emits_requested_and_completed_events(emitter):
     import packages.framework.tool_wrapper as tool_wrapper_module
     original_emitter = tool_wrapper_module.event_emitter
     tool_wrapper_module.event_emitter = emitter
-    
+
     result = sample_tool(param1="test")
 
     # Restore the original emitter
@@ -35,7 +37,7 @@ def test_wrap_tool_emits_requested_and_completed_events(emitter):
 
     assert result == "Success with test and 10"
     assert len(captured_events) == 2
-    
+
     requested_event = captured_events[0]
     assert requested_event["name"] == "sample_tool"
     assert requested_event["args"] == {"param1": "test"}
@@ -48,7 +50,9 @@ def test_wrap_tool_emits_requested_and_completed_events(emitter):
 def test_wrap_tool_emits_failed_event_on_exception(emitter):
     """Tests that the wrapper emits a failure event and re-raises the exception."""
 
-    @wrap_tool
+    tool_wrapper = tool_wrapper_factory(hitl=False)
+
+    @tool_wrapper
     def failing_tool():
         raise ValueError("Tool failed")
 
@@ -69,7 +73,7 @@ def test_wrap_tool_emits_failed_event_on_exception(emitter):
     tool_wrapper_module.event_emitter = original_emitter
 
     assert len(captured_events) == 2
-    
+
     requested_event = captured_events[0]
     assert requested_event["name"] == "failing_tool"
     assert requested_event["args"] == {}

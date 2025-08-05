@@ -7,7 +7,7 @@ import yaml
 import logging
 from pathlib import Path
 
-from .harness import EvaluationHarness
+from ..harness import EvaluationHarness
 from packages.framework.factory import PluginFactory
 from packages.framework.orchestrator import Orchestrator
 from packages.framework.loaders import ProfileLoader, PlaybookLoader

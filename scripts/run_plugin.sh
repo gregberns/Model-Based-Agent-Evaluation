@@ -10,7 +10,7 @@ if [ -z "$PLUGIN" ] || [ -z "$PLAYBOOK" ]; then
     exit 1
 fi
 
-CMD=".venv/bin/python -m packages.framework $PLUGIN $PLAYBOOK --hitl"
+CMD=".venv/bin/python -m packages.framework $PLUGIN $PLAYBOOK"
 if [ -n "$BUG_DESC" ]; then
     CMD="$CMD --bug \"$BUG_DESC\""
 fi
