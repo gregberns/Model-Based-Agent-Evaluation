@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from packages.framework.orchestrator import Orchestrator
 from packages.framework.loaders import ProfileLoader, PlaybookLoader
 from packages.framework.prompt_constructor import PromptConstructor
+from packages.framework.utils import get_gemini_api_key
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,12 +24,14 @@ def main():
     parser.add_argument("playbook_name", help="The name of the playbook to run (e.g., 'playbook_fix_bug').")
     parser.add_argument("--bug", help="The description of the bug to fix.", default="")
     parser.add_argument("--hitl", action="store_true", help="Enable Human-in-the-Loop confirmation for destructive tools.")
-    
+    parser.add_argument("--api-key", help="Gemini API key (overrides other sources).")
+
     args = parser.parse_args()
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("Error: GEMINI_API_KEY environment variable not set.")
+    try:
+        api_key = get_gemini_api_key(args.api_key)
+    except ValueError as e:
+        print(f"Error: {e}")
         sys.exit(1)
 
     # Construct paths
@@ -39,7 +42,7 @@ def main():
     if not plugin_path.is_dir():
         print(f"Error: Plugin '{args.plugin_name}' not found at {plugin_path}")
         sys.exit(1)
-    
+
     if not playbook_path.is_file():
         print(f"Error: Playbook '{args.playbook_name}' not found at {playbook_path}")
         sys.exit(1)
