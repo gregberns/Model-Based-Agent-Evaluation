@@ -1,86 +1,127 @@
-# Plugin Manager
+# Plugin Manager: AI-Driven Plugin Orchestration
 
-## Problem
+## 🎯 The Testing Challenge
 
-What if you needed to maintain a lot of plugins, or today a lot of MCP servers. How could you do that 'at scale' - meaning there are several hundred (or more)?
+How do you validate and debug AI/LLM-based orchestration tools? Traditional testing approaches fall short when dealing with intelligent agents because:
 
-What challenges would you run into?
+- **Black Box Problem**: AI agents make unpredictable decisions, making it hard to validate their behavior
+- **Reproducibility Crisis**: When something goes wrong, can you reproduce the exact conditions to debug it?
+- **Production Risk**: Testing against real systems can be dangerous, expensive, or impractical
+- **Skill Development Gap**: How do you develop expertise in AI agent orchestration without real-world consequences?
 
-* Resources - only so many hours in a day
-* Brain power - hard for a human to understand every plugin
-* Error tracking and resolution - Prod errors tracked, debugged, fixed, deployed
+This project addresses these challenges by exploring a testing paradigm using **Virtual Plugins** as controllable test models.
 
-## Solution
+This project explores a testing approach using **Virtual Plugins** as controllable test models. We create behavioral models of plugins, then execute AI agents against them as if they were real systems. This exercises the execution framework, agent reasoning, and playbook instructions in a safe, controlled environment.
 
-The Plugin Manager is an AI-driven orchestrator system that automates complex software maintenance tasks through standardized, version-controlled **Playbooks**. The system uses an AI agent to execute playbooks on virtual or real plugins, enabling scalable plugin maintenance with minimal human intervention.
+The typical workflow involves:
+1. **Creating model virtual plugins** that resemble the structure and capabilities of real systems
+2. **Developing and testing playbooks** against these virtual models to validate agent behavior
+3. **Testing the same playbooks** against real plugins to ensure they work in production
+4. **Reproducing and debugging issues** by modifying virtual plugins when problems occur
+5. **Iterating safely** to develop solutions in the virtual environment before real deployment
 
-## Architecture
+Think of this as a simulation framework where virtual plugins serve as the "wind tunnel" for testing AI orchestration systems before they encounter real-world complexity.
 
-The system follows a phased approach as outlined in our [master plan](docs/project-plan/00_master_plan.md):
+## 🤔 Why This Matters for Application Developers
 
-### Phase 1: Virtual Plugin and Evaluation Foundation ✅
-- Plugin model schema with Pydantic validation
-- Virtual plugin factory with Jinja2 templating
-- Evaluation harness for end-to-end testing
+If you're not familiar with ML modeling, you might wonder why we need "virtual" or "dummy" plugins. Here's why this approach is valuable:
 
-### Phase 2: Orchestrator and Agent Integration 🔄
-- Event-driven architecture with tool wrapping
-- Gemini Agent integration via function calling
-- End-to-end playbook execution testing
+### Traditional Testing vs. AI Agent Testing
 
-### Phase 3: Real Plugin Environment and CLI (Future)
-- Real plugin environment logic
-- Core CLI interface
-- Human-in-the-loop capabilities
+**Traditional Software Testing:**
+- You write unit tests that call specific functions
+- Tests are deterministic and predictable
+- You test exact inputs → exact outputs
 
-## Key Components
+**AI Agent Testing:**
+- AI agents make decisions and process steps you don't fully control
+- Tests need to validate reasoning processes, not just outputs
+- You need to test scenarios and edge cases, not just happy paths
 
-### Core Framework
-- **Orchestrator**: Manages playbook execution and tool coordination
-- **Event System**: Provides observability through action logging
-- **Tool Wrappers**: Wrap tools with event emission for debugging
-- **Evaluation Harness**: Tests agent capabilities on virtual plugins
+### The Value of Virtual Plugins
 
-### Tooling System
-- **read_file**: Read file contents
-- **write_file**: Write content to files
-- **list_files**: List directory contents
-- **execute_shell_command**: Execute shell commands
-- **edit_file**: Edit file contents with AI assistance
+**Safe Experimentation**: Virtual plugins let you test AI agents without risking production systems. You can create scenarios that would be dangerous or expensive to reproduce in real environments.
 
-### Playbook System
-- **Playbook Loader**: Parse and load playbook instructions
-- **Prompt Constructor**: Build agent prompts from templates
-- **Standardized Playbooks**: Version-controlled instruction sets
+**Realistic Complexity**: Unlike simple unit tests, virtual plugins provide realistic complexity that exercises the agent's full capabilities - file operations, error handling, decision making, etc.
 
-## Development and Testing
+**Reproducible Debugging**: When an AI agent makes a mistake, you can reproduce the exact conditions in the virtual environment to understand what went wrong and fix it.
 
-### Testing Strategy
-The project uses a comprehensive testing strategy organized into two categories:
+**Skill Development**: Just as pilots use flight simulators to practice, developers can use virtual plugins to practice AI agent orchestration skills safely.
 
-#### Deterministic Tests (`evaluations/deterministic/`)
-- **Purpose**: Unit and integration testing for individual tools
-- **Characteristics**: Fast, reliable, no external dependencies
-- **Coverage**: Tool functionality, event emission, error handling
-- **Command**: `pytest evaluations/deterministic/ -v`
+This approach bridges the gap between simple unit tests and complex real-world systems, providing the "just right" level of complexity for developing and validating AI orchestration capabilities.
 
-#### Agent/Playbook Tests (`evaluations/agent/`)
-- **Purpose**: End-to-end testing of agent reasoning and workflows
-- **Characteristics**: Slower, require API key, non-deterministic
-- **Coverage**: Agent reasoning, multi-step workflows, context handling
-- **Command**: `pytest evaluations/agent/ -v`
+## 🔍 The Virtual Plugin Innovation
 
-### Development Workflow
-1. **Isolated Tool Testing**: Validate individual tools in deterministic tests
-2. **Combination Testing**: Test simple tool combinations
-3. **Reasoning Testing**: Validate context-based operations
-4. **Complex Testing**: Build up to multi-step complex operations
+### What is a Virtual Plugin?
+ 
+A Virtual Plugin is a **behavioral model** that simulates a real plugin's characteristics:
+ 
+ - **Defines Expected Behaviors**: Specifies how a plugin should respond to various inputs
+ - **Simulates System Behavior**: Mocks tool execution outcomes without real implementation
+ - **Provides Safe Testing Environment**: Enables AI agent development without risking real systems
 
-## Getting Started
+### Why This Approach Matters
+ 
+Traditional AI tool testing faces challenges because real systems can be risky, complex, or expensive to test against. Virtual Plugins provide an alternative approach:
+ 
+**Safe Development Environment**
+- Test agent behavior without risking production systems
+- Enable rapid iteration on agent capabilities
+- Provide reproducible scenarios for debugging and validation
+ 
+**Realistic Testing Framework**
+- Agents encounter realistic challenges and constraints
+- Test both success and failure scenarios
+- Validate process-following rather than just output generation
+
+**Example Workflow: Bug Fixing Validation**
+1. **Initial State**: Virtual plugin defines a failure scenario
+2. **Agent Task**: "Fix the InvalidFile error for zero-byte files"  
+3. **Agent Action**: Modifies the behavioral profile (not real code)
+4. **Verification**: Test harness confirms the fix works as expected
+
+This validates the agent's **problem-solving process** - the exact capability needed for real maintenance tasks.
+
+## 🏗️ System Architecture
+
+### Core Components
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Playbooks     │    │   Orchestrator  │    │   AI Agent      │
+│                 │    │                 │    │                 │
+│ • TDD Workflow  │───▶│ • Event System  │───▶│ • Gemini Agent  │
+│ • Bug Fixing    │    │ • Tool Wrappers │    │ • Function Call  │
+│ • Version Bump  │    │ • Process Coord │    │ • Reasoning     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Virtual Plugins │    │   Tools         │    │ Real Plugins    │
+│                 │    │                 │    │                 │
+│ • Behavioral    │    │ • read_file    │    │ • Production    │
+│   Profiles      │    │ • write_file   │    │   Implementations │
+│ • Process Mocks │    │ • list_files   │    │ • Real Code     │
+│ • Test Harness  │    │ • shell_cmd    │    │ • CHANGE_LOG.md │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Key Innovation: Execution Traces
+
+How do we validate that agents follow playbooks correctly? We use **Execution Traces** - structured logs that capture:
+
+- `command_run`: Commands executed with exit codes and output
+- `file_write`: Files modified during execution  
+- `version_change`: Version increments and changelog updates
+- `tool_calls`: Agent tool usage and parameters
+
+This creates a deterministic way to validate agent behavior, providing confidence in the testing framework and enabling reliable comparisons between virtual and real plugin scenarios.
+
+## 🚀 Getting Started
 
 ### Prerequisites
 - Python 3.8+
-- Gemini API key (`GEMINI_API_KEY` environment variable)
+- Gemini API key (via environment variable, .env file, or command line)
 - Virtual environment setup
 
 ### Installation
@@ -88,84 +129,128 @@ The project uses a comprehensive testing strategy organized into two categories:
 make install-deps
 ```
 
-### Running Tests
-```bash
-# All tests
-make test
+### Configuration
 
-# Deterministic tests only
+The system supports multiple API key sources (in order of priority):
+
+1. **Command Line**: `--api-key YOUR_KEY`
+2. **Project .env**: Add `GEMINI_API_KEY=your_key` to `.env`
+3. **Environment Variable**: `export GEMINI_API_KEY=your_key`
+4. **Home .env**: Add `GEMINI_API_KEY=your_key` to `~/.env`
+
+### Running Tests
+
+#### Deterministic Tests (Fast, Reliable)
+```bash
+# All deterministic tests
 pytest evaluations/deterministic/ -v
 
-# Agent/playbook tests only
+# Specific tool tests  
+pytest evaluations/deterministic/test_read_file.py -v
+```
+
+#### Agent/Playbook Tests (Slower, Require API Key)
+```bash
+# All agent tests (requires GEMINI_API_KEY)
 pytest evaluations/agent/ -v
+
+# Specific playbook tests
+pytest evaluations/agent/test_playbook_copy_file.py -v
 ```
 
 ### Running Playbooks
-```bash
-# Run a playbook on a real plugin
-make run-plugin p=<plugin_name> pb=<playbook_name> [bug='<description>']
 
-# Examples:
-make run-plugin p=my-first-plugin pb=playbook_fix_bug
-make run-plugin p=my-first-plugin pb=playbook_fix_bug bug='Fix whitespace issue'
+Execute playbooks on real plugins:
+
+```bash
+# Basic usage
+python -m packages.framework my-first-plugin playbook_list_files
+
+# With bug description
+python -m packages.framework my-first-plugin playbook_fix_bug --bug "Fix whitespace issue"
+
+# With custom API key
+python -m packages.framework my-first-plugin playbook_fix_bug --api-key YOUR_KEY
+
+# Enable Human-in-the-Loop
+python -m packages.framework my-first-plugin playbook_fix_bug --hitl
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 poc-plugin-manager/
-├── docs/project-plan/           # Master plan and technical specifications
-├── packages/                    # Core framework packages
+├── packages/                    # Core framework
 │   ├── framework/              # Orchestrator and core components
-│   └── plugin_manager_agent/   # Agent implementation and tools
-├── playbooks/                  # Standardized playbook definitions
+│   │   ├── __main__.py         # CLI entrypoint
+│   │   ├── orchestrator.py     # Main execution engine
+│   │   ├── tool_wrapper.py     # Tool event wrapping
+│   │   └── utils/              # Utilities (API key management)
+│   └── plugin_manager_agent/   # Agent implementation
+│       ├── gemini_agent.py     # Gemini AI integration
+│       └── tools/              # Available tools
+├── playbooks/                  # Standardized instruction sets
+│   ├── playbook_copy_file.md   # File copying workflow
+│   ├── playbook_fix_bug.md     # Bug fixing workflow
+│   └── playbook_update_description.md  # Profile modification
 ├── templates/                  # Virtual plugin templates
 ├── evaluations/                # Test suites
-│   ├── deterministic/          # Unit and integration tests
+│   ├── deterministic/          # Unit/integration tests
 │   └── agent/                  # End-to-end agent tests
-├── scripts/                    # Utility scripts
-└── Makefile                    # Build and development targets
+├── plugins_real/               # Real production plugins
+└── .env                        # Configuration (contains API key)
 ```
 
-## Current Status
+## 🧪 Available Playbooks
 
-### ✅ Completed
-- Core framework infrastructure
-- Virtual plugin factory
-- Individual tool implementations
-- Simple tool combinations
-- Deterministic testing infrastructure
+### Tool Combination Workflows
+- **`playbook_copy_file.md`**: Copy file content using `read_file` + `write_file`
+- **`playbook_read_specific_file.md`**: Find and read specific files using `list_files` + `read_file`
+- **`playbook_command_and_capture.md`**: Execute commands and capture output
 
-### 🔄 In Progress
-- Agent reasoning validation
-- Complex playbook development
-- Multi-step operation testing
+### Reasoning Workflows  
+- **`playbook_update_description.md`**: Modify plugin profiles based on context
+- **`playbook_fix_bug.md`**: Complex bug fixing with multiple reasoning steps
 
-### 🚧 Next Steps
-- Complete tool combination validation
-- Develop reasoning-based playbooks
-- Build up to complex operations
-- Validate end-to-end workflows
+### Simple Operations
+- **`playbook_list_files.md`**: Basic directory listing
 
-## Contributing
+## 🔧 Development Workflow
 
-1. Follow the TDD approach: write tests before implementing features
-2. Separate deterministic and agent tests appropriately
-3. Use the evaluation harness for consistent agent testing
-4. Document new playbooks and tools thoroughly
-5. Update documentation when adding new capabilities
+1. **Tool Validation**: Test individual tools in isolation
+2. **Combination Testing**: Validate simple tool combinations  
+3. **Reasoning Development**: Build context-based operations
+4. **Complex Integration**: Progress to multi-step workflows
 
-## Technical Choices
+### Quality Assurance
 
-I've been using Gemini CLI a lot. It's a good coding agent, so let's experiment with how we could orchestrate its use over lots of standardized things.
+- **Deterministic Tests**: 100% passing, fast execution
+- **Agent Tests**: Validate reasoning capabilities (require API key)
+- **Execution Traces**: Verify agent behavior correctness
+- **Documentation**: Comprehensive inline documentation
 
-This ABSOLUTELY could be done differently. This may only scale so far. At some point we may need something like LangChain workflows to enforce a more formal process.
+## 📚 Documentation
 
-But... with something like LangChain's workflows, (I have found) you don't have the robust, well integrated tools a code agent has like Gemini.
+- [Project Plan](docs/project-plan/00_master_plan.md) - High-level architecture
+- [Next Steps](NEXT_STEPS.md) - Current development focus
+- [Tasks](TASKS.md) - Detailed implementation tasks
+- [Evaluations Guide](evaluations/README.md) - Testing strategy
 
-## Documentation
+### Key Benefits
 
-- [Master Plan](docs/project-plan/00_master_plan.md)
-- [Next Steps](NEXT_STEPS.md)
-- [Tasks](TASKS.md)
-- [Evaluations Guide](evaluations/README.md)
+### For AI Tool Development
++- **Safe Testing**: Experiment with agent capabilities without risking production systems
++- **Rapid Development**: Quick iteration cycles for playbook and agent refinement
++- **Reproducible Scenarios**: Consistent conditions for debugging and validation
+
+### For Testing Frameworks
++- **Behavioral Testing**: Validate how agents follow processes rather than just checking outputs
++- **Deterministic Validation**: Execution traces provide reliable test results
++- **Cross-Environment Testing**: Ensure consistent behavior across virtual and real systems
+
+### For Quality Assurance
++- **Comprehensive Testing**: Covers tool functionality, agent reasoning, and process execution
++- **Fast Feedback**: Deterministic tests provide quick insights and validation
++- **Risk Reduction**: Catch and resolve issues in virtual environments before real deployment
+
+This project explores a testing approach for AI orchestration systems: using Virtual Plugins as behavioral models, validated through execution traces, enabling safe and reproducible AI agent development.
