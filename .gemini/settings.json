@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "context7": {
+      "httpUrl": "https://mcp.context7.com/mcp"
+    },
+    "code-index": {
+      "command": "uvx",
+      "args": ["code-index-mcp"]
+    }
+  },
+  "sessionTokenLimit": "128000"
+}
