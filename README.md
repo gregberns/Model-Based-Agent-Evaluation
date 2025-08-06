@@ -10,7 +10,7 @@ This repository serves as a reference implementation of this methodology. Using 
 
 ---
 
-## Context
+### Context
 
 For engineers not steeped in Machine Learning concepts:
 
