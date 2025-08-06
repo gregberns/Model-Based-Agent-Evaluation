@@ -10,9 +10,21 @@ This repository serves as a reference implementation of this methodology. Using 
 
 ---
 
+## Context
+
+For engineers not steeped in Machine Learning concepts:
+
+A model can be thought of like a mock or stub. It is a simplified representation of a component, system, environment... really anything - a person even.
+
+A model can be placed in an environment/system, and the system can perform actions upon the model as if it were the real thing. This is similar to how an HTTP mock simulates an HTTP request.
+
+The "Virtual Plugins" described below are the Mocks. The "Playbooks" (prompts) are what are being modified. The Agent and Orchestrator are the execution environment. And the objective is to 'test' or evaluate that the Playbooks and Agents reliably execute the desired actions.
+
+---
+
 ### The Challenge: Automating Maintenance with Confidence
 
-Let's say you maintain a large library of similar components—plugins, microservices, or internal tools. The overhead of keeping them all consistent is immense. Tasks like updating dependencies, enforcing coding patterns, or applying a simple security patch across every repository create a significant maintenance burden.
+Maintaining a large library of similar components, plugins, microservices, or internal tools can be a challenge. There's a large overhead to maintaining consistency throughout the system. Tasks like updating dependencies, enforcing coding patterns, or applying a simple security patch across every repository create a significant maintenance burden.
 
 AI agents should be able to help with these common problems:
 
@@ -20,7 +32,7 @@ AI agents should be able to help with these common problems:
 *   **Cognitive Overload**: Freeing developers from the high mental load of context-switching between numerous components just to track, fix, and deploy simple changes.
 *   **Slow Deployments**: Speeding up the lifecycle of simple fixes and updates.
 
-The idea of unleashing an AI agent to handle these tasks is compelling, but we've all seen them fail unpredictably. Even for well-defined, repetitive tasks, a critical question remains: how do you validate that the agent will actually accomplish the task correctly?
+The idea of unleashing an AI agent to handle these tasks is compelling! But the unpredictability, inconsistency, and need for hand-holding of Agents should make every team lead nervous. Especially for well-defined, repetitive tasks, a critical question remains: how do you validate that the agent will actually accomplish the task correctly?
 
 Standard unit testing falls short. It can test a specific, deterministic function, but it can't validate the complex, multi-step reasoning of an AI agent. This leads to the central problem:
 
@@ -32,9 +44,9 @@ This project explores a methodology for building and testing AI agents in a safe
 
 To make this tangible, we use a "wind tunnel" analogy. A successful test requires three things: the object being tested, a set of instructions, and the testing environment itself.
 
-1.  **The Virtual Plugin (The Model)**: This is the object we place *inside* the wind tunnel. It is a **behavioral model** that simulates a real piece of code—a "process mock." It is not the code itself, but a simplified, predictable representation for the agent to modify. In our analogy, this is the scale model of an airplane wing.
+1.  **The Virtual Plugin (The Model)**: This is the object we place *inside* the wind tunnel. It is a **behavioral model** that simulates a real piece of code — a "process mock." It is not the production code itself, but a simplified, predictable representation for the agent to act upon. In our analogy, this is the scale model of an airplane wing.
 
-2.  **The Playbook (The Instructions)**: These are the agent's **execution instructions**. A playbook is a structured, version-controlled prompt that guides the agent through a complex workflow. It often serves as a template, combining reusable best practices with specific variables for the task (e.g., the details of a bug report). The Virtual Plugin is used to verify that these instructions are robust; the playbook is tuned and refined until an agent can follow it reliably, first in the simulation and eventually on real code.
+2.  **The Playbook (The Instructions)**: These are the agent's **execution instructions**. A playbook is a structured, version-controlled prompt that guides the agent through a task - from a simple action to a complex workflow. It often serves as a template, combining reusable best practices with specific variables for the task (e.g., task description, prod errors, logs). The Virtual Plugin is used to verify that these instructions are robust; the playbook is tuned and refined until an agent can follow it reliably, first in the simulation and eventually on real code.
 
 3.  **The Orchestrator (The Wind Tunnel)**: This is the framework that runs the entire simulation. It provides the agent with a sandboxed set of tools, executes the instructions from the Playbook, and records every action the agent takes. It's the controlled environment that ensures tests are safe and results are measurable.
 
@@ -42,13 +54,13 @@ The workflow is simple: the **Orchestrator** uses a **Playbook** to guide an **A
 
 By having the agent operate on the virtual model first, we can validate its ability to follow instructions and solve problems correctly. It's a way to test and refine the agent's reasoning in a safe, repeatable environment.
 
-> Think of this as a simulation framework where virtual plugins serve as the "wind tunnel" for testing AI orchestration systems before they encounter real-world complexity.
+> Think of this as a simulation framework where prompts (Playbooks) are placed in a "wind tunnel" for testing AI orchestration systems before they encounter real-world complexity.
 
-This approach builds confidence. When we finally deploy the agent to operate on a real plugin, we have already validated that it can follow the playbook and achieve the desired outcome.
+This approach builds confidence. When we finally deploy the agent to production, we have already validated that it can follow the playbook and achieve the desired outcome.
 
 ### How It Works: From Model to Automated Workflow
 
-The following example breaks down a complex bug fix into distinct steps. Each step can be individually tested and validated using a dedicated playbook, and then composed into a larger, automated workflow for an agent to execute. This approach ensures that even a frontier model, which might otherwise deviate from conventions, follows a precise, engineered process.
+The following example breaks down a complex bug fix into distinct steps. Each step can be individually tested and validated using a dedicated playbook. Those steps can be composed into a larger automated workflow for an agent to execute. This approach ensures that even a frontier model, which might otherwise deviate from conventions, follows a precise, engineered process.
 
 1.  **Ingest and Prioritize the Error**: A playbook instructs the agent to query a monitoring tool (like DataDog) for active production issues. The agent chooses a high-priority error and gathers the necessary context: the software version, stack trace, and logs.
 
@@ -60,7 +72,7 @@ The following example breaks down a complex bug fix into distinct steps. Each st
 
 5.  **Submit for Review**: Finally, the agent commits the code, pushes the branch, and opens a Pull Request, summarizing the error and its fix in the description for a human engineer to review and merge.
 
-This entire process is first perfected against **Virtual Plugins**. We use different models to simulate the specific behaviors the agent needs to handle at each stage. For instance, one Virtual Plugin can simulate the API responses from the monitoring tool, while another models the file system for the agent to check out and modify. We tune the playbook for each step against its corresponding model until the agent can successfully execute each part of the workflow. Only then do we have the confidence to deploy it against our real codebase.
+This entire process is first perfected against a model (Virtual Plugin). We use different models to simulate the specific behaviors the agent needs to handle at each stage. For instance, one Virtual Plugin can simulate the API responses from the monitoring tool, while another models the file system for the agent to check out and modify. We tune the playbook for each step against its corresponding model until the agent can successfully execute each part of the workflow. Only then do we have the confidence to deploy it against our real codebase.
 
 ## 🏗️ System Architecture
 
