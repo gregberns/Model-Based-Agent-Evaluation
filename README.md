@@ -54,7 +54,7 @@ The workflow is simple: the **Orchestrator** uses a **Playbook** to guide an **A
 
 By having the agent operate on the virtual model first, we can validate its ability to follow instructions and solve problems correctly. It's a way to test and refine the agent's reasoning in a safe, repeatable environment.
 
-> Think of this as a simulation framework where prompts (Playbooks) are placed in a "wind tunnel" for testing AI orchestration systems before they encounter real-world complexity.
+> Think of this as a simulation framework where prompts (Playbooks) are placed in a "wind tunnel" for testing AI Agent orchestration systems before they encounter real-world complexity.
 
 This approach builds confidence. When we finally deploy the agent to production, we have already validated that it can follow the playbook and achieve the desired outcome.
 
@@ -79,6 +79,8 @@ This entire process is first perfected against a model (Virtual Plugin). We use 
 ### Core Components
 
 The system's architecture is designed to be safe and testable by separating the "thinking" from the "doing." This is achieved by having a central **Orchestrator** that mediates every action the **AI Agent** takes.
+
+(Appologies if the visualization doesn't render well)
 
 ```
         ┌────────────┐
@@ -137,7 +139,7 @@ The architecture is composed of two primary layers, with the Orchestrator acting
 
 This model is fundamentally safe because the agent can only *request* actions. The **Orchestrator** is the component that actually *executes* them, providing a single point of control for logging, security, and switching between test and production environments.
 
-### Key Innovation: Execution Traces
+#### Execution Traces
 
 How do we validate that agents follow playbooks correctly? We use **Execution Traces** - structured logs that capture:
 
