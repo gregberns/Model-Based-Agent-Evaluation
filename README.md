@@ -56,25 +56,64 @@ This entire process is first perfected against **Virtual Plugins**. We use diffe
 
 ### Core Components
 
+The system's architecture is designed to be safe and testable by separating the "thinking" from the "doing." This is achieved by having a central **Orchestrator** that mediates every action the **AI Agent** takes.
+
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Playbooks     │    │   Orchestrator  │    │   AI Agent      │
-│                 │    │                 │    │                 │
-│ • TDD Workflow  │───▶│ • Event System  │───▶│ • Gemini Agent  │
-│ • Bug Fixing    │    │ • Tool Wrappers │    │ • Function Call  │
-│ • Version Bump  │    │ • Process Coord │    │ • Reasoning     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ Virtual Plugins │    │   Tools         │    │ Real Plugins    │
-│                 │    │                 │    │                 │
-│ • Behavioral    │    │ • read_file    │    │ • Production    │
-│   Profiles      │    │ • write_file   │    │   Implementations │
-│ • Process Mocks │    │ • list_files   │    │ • Real Code     │
-│ • Test Harness  │    │ • shell_cmd    │    │ • CHANGE_LOG.md │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+        ┌────────────┐
+        │      Playbook      │
+        │   (The Mission)    │
+        └───────┬────┘
+                     │ (1. Provides Goal)
+                     ▼
+    ┌────────────────────────────────┐
+    │         CONTROL PLANE                               │
+    │                                                     │
+    │   ┌──────────────┐       ┌─────────┐
+    │   │ Orchestrator          │ <--->  │ AI Agent     │
+    │   │ (The Engine)          │        │ (Reasoning)  │
+    │   └──────┬───────┘       └─────────┘
+    │          (2. Manages                                │
+    │       Task/Result Loop)                             │
+    └──────────┼─────────────────────┘
+                      │ (3. Executes Tools & Returns Output)
+                      ▼
+    ┌───────────────────────────────┐
+    │        EXECUTION PLANE                            │
+    │                                                   │
+    │        ┌────────────┐                    │
+    │        │   Tools           │                     │
+    │        └─────┬──────┘                    │
+    │                  │ (4. Acts upon...)              |
+    │                  ▼                                │
+    │  ┌──────────────────────────┐   │
+    │  │    Target Environment                     │   │
+    │  │    ┌────────────────┐         │   │
+    │  │    │ Virtual Plugin           │          │   │
+    │  │    └────────────────┘         │   │
+    │  │              OR                           │   │
+    │  │    ┌────────────────┐         │   │
+    │  │    │  Real Plugin              │         │   │
+    │  │    └────────────────┘         │   │
+    │  └──────────────────────────┘   │
+    └───────────────────────────────┘
 ```
+
+#### How It Works:
+
+The architecture is composed of two primary layers, with the Orchestrator acting as the bridge between them.
+
+1.  **The Control Plane (The "Brains")**: This is where the strategy and reasoning happen.
+    *   A **Playbook** provides the high-level mission or goal to the Orchestrator.
+    *   The **Orchestrator** is the central engine that manages the entire workflow. It does not reason on its own.
+    *   The **AI Agent** provides the reasoning. The Orchestrator passes the agent the current task and context; the agent decides which tool to use next and passes that request back to the Orchestrator. This tight loop continues until the goal is met.
+
+2.  **The Execution Plane (The "World")**: This is the environment that the Orchestrator can act upon. The agent has **no direct access** to this layer.
+    *   **Tools** are the discrete capabilities the Orchestrator can execute, such as `read_file` or `run_shell_command`.
+    *   The **Target Environment** is what the tools affect. The Orchestrator can be configured to point to either:
+        *   A **Virtual Plugin**: A safe, simulated environment for testing, debugging, and refining playbooks.
+        *   A **Real Plugin**: The actual production codebase for executing a validated, trusted workflow.
+
+This model is fundamentally safe because the agent can only *request* actions. The **Orchestrator** is the component that actually *executes* them, providing a single point of control for logging, security, and switching between test and production environments.
 
 ### Key Innovation: Execution Traces
 
