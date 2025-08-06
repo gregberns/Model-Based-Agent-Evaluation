@@ -38,33 +38,19 @@ This approach builds confidence. When we finally deploy the agent to operate on 
 
 ### How It Works: From Model to Automated Workflow
 
-The core idea of this project is to use a simplified *model* as a proxy for a real-world system, allowing us to safely test and develop our automation.
+The following example breaks down a complex bug fix into distinct steps. Each step can be individually tested and validated using a dedicated playbook, and then composed into a larger, automated workflow for an agent to execute. This approach ensures that even a frontier model, which might otherwise deviate from conventions, follows a precise, engineered process.
 
-#### Why Use a Model? The Power of a Proxy
+1.  **Ingest and Prioritize the Error**: A playbook instructs the agent to query a monitoring tool (like DataDog) for active production issues. The agent chooses a high-priority error and gathers the necessary context: the software version, stack trace, and logs.
 
-In machine learning, a model is a simplified representation of a complex system. It's not the system itself, but it behaves similarly enough to be a useful proxy for thought experiments and simulations.
+2.  **Create a Test Environment**: The agent checks out the specific Git commit from the error report and creates a new branch for the fix (e.g., `fix/TICKET-123`).
 
-Think of it this way: you could create a mental "model" of a close friend. You could ask that model, "Would my friend enjoy a surprise party?" Based on your knowledge, the model would give you a probable answer. It allows you to run an experiment and anticipate the real-world response without the risk of actually ruining a surprise.
+3.  **Research and Reproduce the Bug**: The agent researches the likely source of the error based on the ingested data. To confirm its understanding, it writes a new unit test that programmatically reproduces the bug and verifies that this new test fails as expected.
 
-Our **Virtual Plugin** is just such a model, but for a piece of software. It's a safe, predictable proxy that we can run experiments against. By instructing an agent to modify this model, we can validate whether our instructions (the Playbook) are clear and effective enough to achieve the desired result.
+4.  **Implement and Validate the Fix**: Following a "Test-Driven Development" playbook, the agent modifies the application code to resolve the issue. It then re-runs the new test to confirm it now passes and executes the full test suite to ensure the change introduced no regressions.
 
-#### A Practical Example: From Production Error to Pull Request
+5.  **Submit for Review**: Finally, the agent commits the code, pushes the branch, and opens a Pull Request, summarizing the error and its fix in the description for a human engineer to review and merge.
 
-With this model-based approach, we can orchestrate complex, real-world maintenance tasks. Imagine a new bug is reported by an error-tracking service like DataDog. We could deploy an agent to perform the following workflow:
-
-1.  **Ingest the Error**: The agent is triggered by the new error. It uses a tool to pull the relevant details: the stack trace, error message, and the exact version of the code where the error occurred.
-
-2.  **Create a Test Environment**: The agent checks out the specific Git commit from the production error and creates a new branch named after the issue (e.g., `fix/TICKET-123`).
-
-3.  **Reproduce the Bug**: Using a "Test-Driven Development" Playbook, the agent first writes a new unit test that fails, successfully reproducing the reported bug in the local environment.
-
-4.  **Research and Fix**: The agent uses its reasoning capabilities and available tools to analyze the source of the error. It then modifies the code to implement a fix.
-
-5.  **Validate the Fix**: The agent runs the entire test suite, confirming that its new test now passes and that no existing tests have been broken (i.e., no regressions).
-
-6.  **Submit for Review**: Finally, the agent commits the code, pushes the branch, and opens a Pull Request, summarizing the error and its fix in the description for a human engineer to review and merge.
-
-This entire process is first perfected against a **Virtual Plugin**. We create a virtual model where the "bug" is a predictable, simulated failure. We tune the Playbook until the agent can successfully execute this workflow in the simulation. Only then do we have the confidence to deploy it against our real codebase.
+This entire process is first perfected against **Virtual Plugins**. We use different models to simulate the specific behaviors the agent needs to handle at each stage. For instance, one Virtual Plugin can simulate the API responses from the monitoring tool, while another models the file system for the agent to check out and modify. We tune the playbook for each step against its corresponding model until the agent can successfully execute each part of the workflow. Only then do we have the confidence to deploy it against our real codebase.
 
 ## 🏗️ System Architecture
 
